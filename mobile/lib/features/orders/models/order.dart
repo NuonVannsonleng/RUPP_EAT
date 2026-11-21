@@ -40,6 +40,8 @@ class DeliveryLocation {
   String get floor => raw['floor_label'] ?? (raw['floor'] != null ? 'Floor ${raw['floor']}' : '');
 
   String get short => '$building · $room';
+  double? get latitude => (raw['latitude'] as num?)?.toDouble();
+  double? get longitude => (raw['longitude'] as num?)?.toDouble();
   String get full => [faculty, building, floor, room].whereType<String>().where((s) => s.isNotEmpty).join(' › ');
 }
 

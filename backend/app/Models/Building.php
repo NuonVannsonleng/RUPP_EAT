@@ -12,11 +12,11 @@ class Building extends Model
 {
     use HasUuids, SoftDeletes;
 
-    protected $fillable = ['faculty_id', 'name', 'code', 'description', 'latitude', 'longitude', 'is_active'];
+    protected $fillable = ['faculty_id', 'name', 'code', 'description', 'latitude', 'longitude', 'polygon', 'official_map_no', 'is_active'];
 
     protected function casts(): array
     {
-        return ['is_active' => 'boolean', 'latitude' => 'float', 'longitude' => 'float'];
+        return ['is_active' => 'boolean', 'latitude' => 'float', 'longitude' => 'float', 'polygon' => 'array', 'official_map_no' => 'integer'];
     }
 
     public function faculty(): BelongsTo

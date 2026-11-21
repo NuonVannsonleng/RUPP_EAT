@@ -50,6 +50,8 @@ class DeliveryResource extends JsonResource
                 'phone' => $order->store->phone,
                 'location_note' => $order->store->location_note,
                 'building' => $order->store->building?->name,
+                'latitude' => $order->store->coordinates()['lat'] ?? null,
+                'longitude' => $order->store->coordinates()['lng'] ?? null,
             ],
             'customer' => ($isAssignedDriver || $isAdmin) ? [
                 'name' => $order->customer->name,

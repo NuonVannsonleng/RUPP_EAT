@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\CartController;
 use App\Http\Controllers\Api\CatalogController;
 use App\Http\Controllers\Api\CustomerController;
 use App\Http\Controllers\Api\Driver\DriverController;
+use App\Http\Controllers\Api\MapController;
 use App\Http\Controllers\Api\OrderController;
 use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\StoreController;
@@ -27,6 +28,7 @@ use Illuminate\Support\Facades\Route;
 // ---------- Public ----------
 Route::middleware('throttle:10,1')->group(function () {
     Route::post('register', [AuthController::class, 'register']);
+    Route::post('register/driver', [AuthController::class, 'registerDriver']);
     Route::post('login', [AuthController::class, 'login']);
     Route::post('forgot-password', [AuthController::class, 'forgotPassword']);
     Route::post('reset-password', [AuthController::class, 'resetPassword']);
@@ -34,6 +36,7 @@ Route::middleware('throttle:10,1')->group(function () {
 });
 Route::get('settings/public', [CatalogController::class, 'publicSettings']);
 Route::get('campus/locations', [CatalogController::class, 'campus']);
+Route::get('campus/map', [MapController::class, 'campus']);
 
 // ---------- Any signed-in, active user ----------
 Route::middleware(['auth:sanctum', 'role'])->group(function () {
@@ -66,6 +69,7 @@ Route::middleware(['auth:sanctum', 'role'])->group(function () {
     Route::get('orders', [OrderController::class, 'index']);
     Route::get('orders/{order}', [OrderController::class, 'show']);
     Route::patch('orders/{order}/status', [OrderController::class, 'updateStatus']);
+    Route::get('orders/{order}/tracking', [MapController::class, 'tracking']);
 
     // ---------- Customer ----------
     Route::middleware('role:customer')->group(function () {
@@ -89,6 +93,7 @@ Route::middleware(['auth:sanctum', 'role'])->group(function () {
     Route::middleware('role:driver')->prefix('driver')->group(function () {
         Route::get('dashboard', [DriverController::class, 'dashboard']);
         Route::post('availability', [DriverController::class, 'availability']);
+        Route::post('location', [MapController::class, 'updateDriverLocation'])->middleware('throttle:120,1');
         Route::get('deliveries', [DriverController::class, 'index']);
         Route::get('deliveries/{delivery}', [DriverController::class, 'show']);
         Route::post('deliveries/{delivery}/accept', [DriverController::class, 'accept']);

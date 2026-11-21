@@ -10,6 +10,7 @@ import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/common.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../data/driver_repository.dart';
+import '../services/location_reporter.dart';
 import '../widgets/delivery_card.dart';
 import 'delivery_detail_screen.dart';
 
@@ -52,6 +53,7 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
   Future<void> _load({bool silent = false}) async {
     try {
       final d = await context.read<DriverRepository>().dashboard();
+      if (mounted) context.read<DriverLocationReporter>().setOnline(d.isOnline);
       if (mounted) {
         setState(() {
           _data = d;
@@ -102,6 +104,25 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
                     d.verificationStatus == 'rejected' ? AppColors.danger : AppColors.accent,
                   ) else if (!d.isActive) _banner('Your driver account is deactivated. Contact the RUPP Eat admin.', AppColors.danger),
                   _onlineCard(d),
+                  Builder(builder: (context) {
+                    final gps = context.watch<DriverLocationReporter>();
+                    if (!d.isOnline) return const SizedBox.shrink();
+                    return Padding(
+                      padding: const EdgeInsets.only(top: 8),
+                      child: Row(children: [
+                        Icon(gps.problem != null ? Icons.location_off_rounded : Icons.my_location_rounded, size: 16,
+                            color: gps.problem != null ? AppColors.danger : AppColors.success),
+                        const SizedBox(width: 6),
+                        Expanded(
+                          child: Text(
+                            gps.problem ?? (gps.last != null ? 'Sharing your live location with customers' : 'Getting your GPS position…'),
+                            style: TextStyle(fontSize: 12.5, color: gps.problem != null ? AppColors.danger : AppColors.textMuted),
+                          ),
+                        ),
+                        if (gps.problem != null) TextButton(onPressed: () => gps.start(), child: const Text('Retry')),
+                      ]),
+                    );
+                  }),
                   const SizedBox(height: 16),
                   Row(children: [
                     Expanded(child: _stat('Today', '${d.stats.todayDeliveries}', 'deliveries', Icons.delivery_dining_rounded)),

@@ -8,6 +8,7 @@ import 'features/auth/providers/auth_provider.dart';
 import 'features/auth/screens/login_screen.dart';
 import 'features/cart/providers/cart_provider.dart';
 import 'features/driver/screens/driver_shell.dart';
+import 'features/driver/services/location_reporter.dart';
 import 'features/notifications/providers/notification_provider.dart';
 import 'shell/customer_shell.dart';
 
@@ -62,6 +63,7 @@ class _AuthGateState extends State<_AuthGate> {
     } else {
       notifications.stop();
       context.read<CartProvider>().resetLocal();
+      context.read<DriverLocationReporter>().stop(); // never keep sharing GPS after logout
     }
   }
 

@@ -25,12 +25,13 @@ class DriverController extends Controller
         $driver = $request->user();
         $profile = $driver->driverProfile;
 
-        $mine = Delivery::where('driver_id', $driver->id);
-        $todayDelivered = (clone $mine)->where('status', DeliveryStatus::Delivered)->whereDate('delivered_at', today());
-        $active = (clone $mine)->whereIn('status', DeliveryStatus::active())->with(self::WITH)->orderBy('assigned_at')->get();
+        // Columns are table-qualified: the earnings sums join `orders`, which also has driver_id and status.
+        $mine = Delivery::where('deliveries.driver_id', $driver->id);
+        $todayDelivered = (clone $mine)->where('deliveries.status', DeliveryStatus::Delivered)->whereDate('deliveries.delivered_at', today());
+        $active = (clone $mine)->whereIn('deliveries.status', DeliveryStatus::active())->with(self::WITH)->orderBy('deliveries.assigned_at')->get();
 
         $earningsToday = (float) (clone $todayDelivered)->join('orders', 'orders.id', '=', 'deliveries.order_id')->sum('orders.delivery_fee');
-        $weekDelivered = (clone $mine)->where('status', DeliveryStatus::Delivered)->where('delivered_at', '>=', now()->startOfWeek());
+        $weekDelivered = (clone $mine)->where('deliveries.status', DeliveryStatus::Delivered)->where('deliveries.delivered_at', '>=', now()->startOfWeek());
 
         return $this->ok([
             'profile' => [
@@ -69,7 +70,7 @@ class DriverController extends Controller
         $profile->update([
             'is_online' => $request->boolean('is_online'),
             'last_online_at' => $request->boolean('is_online') ? now() : $profile->last_online_at,
-        ]);
+        ] + ($request->boolean('is_online') ? [] : ['current_latitude' => null, 'current_longitude' => null, 'current_heading' => null]));
 
         return $this->ok(['is_online' => $profile->is_online], $profile->is_online ? 'You are online.' : 'You are offline.');
     }

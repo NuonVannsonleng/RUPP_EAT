@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/common.dart';
+import '../../maps/screens/campus_map_screen.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../notifications/providers/notification_provider.dart';
 import '../../notifications/screens/notifications_screen.dart';
@@ -63,16 +64,23 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _header(String name, int unread) => CampusHeader(
-        trailing: IconButton(
-          onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const NotificationsScreen())),
-          icon: Badge(
-            isLabelVisible: unread > 0,
-            backgroundColor: AppColors.gold,
-            textColor: AppColors.text,
-            label: Text('$unread'),
-            child: const Icon(Icons.notifications_none_rounded, size: 28, color: Colors.white),
+        trailing: Row(mainAxisSize: MainAxisSize.min, children: [
+          IconButton(
+            tooltip: 'Campus food map',
+            onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const CampusMapScreen())),
+            icon: const Icon(Icons.map_outlined, size: 26, color: Colors.white),
           ),
-        ),
+          IconButton(
+            onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const NotificationsScreen())),
+            icon: Badge(
+              isLabelVisible: unread > 0,
+              backgroundColor: AppColors.gold,
+              textColor: AppColors.text,
+              label: Text('$unread'),
+              child: const Icon(Icons.notifications_none_rounded, size: 28, color: Colors.white),
+            ),
+          ),
+        ]),
         bottom: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           RichText(
             text: TextSpan(style: const TextStyle(fontSize: 21, fontWeight: FontWeight.w800, color: Colors.white), children: [
@@ -84,6 +92,21 @@ class _HomeScreenState extends State<HomeScreen> {
           const Text('What would you like to eat today?', style: TextStyle(color: Colors.white70)),
           const SizedBox(height: 14),
           Padding(padding: const EdgeInsets.only(right: 8), child: _searchBar()),
+          const SizedBox(height: 10),
+          GestureDetector(
+            onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const CampusMapScreen())),
+            child: Container(
+              margin: const EdgeInsets.only(right: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.14), borderRadius: BorderRadius.circular(14), border: Border.all(color: Colors.white24)),
+              child: const Row(children: [
+                Icon(Icons.location_on_rounded, color: AppColors.gold, size: 20),
+                SizedBox(width: 8),
+                Expanded(child: Text('Find food on the RUPP Campus I map', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600))),
+                Icon(Icons.chevron_right_rounded, color: Colors.white70),
+              ]),
+            ),
+          ),
         ]),
       );
 

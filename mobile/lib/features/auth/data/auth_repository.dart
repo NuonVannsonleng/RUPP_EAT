@@ -20,6 +20,13 @@ class AuthRepository {
     return (data['token'] as String, AppUser.fromJson((data['user'] as Map).cast()));
   }
 
+  /// Driver application: account starts 'pending' until an admin verifies it.
+  Future<(String, AppUser)> registerDriver(Map<String, dynamic> body) async {
+    final res = await _api.post('/register/driver', data: {...body, 'device_name': 'android'});
+    final data = (res['data'] as Map).cast<String, dynamic>();
+    return (data['token'] as String, AppUser.fromJson((data['user'] as Map).cast()));
+  }
+
   Future<AppUser> me() async => AppUser.fromJson(((await _api.get('/me'))['data'] as Map).cast());
 
   Future<void> logout() => _api.post('/logout');

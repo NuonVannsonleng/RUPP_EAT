@@ -12,6 +12,7 @@ import '../../orders/data/order_repository.dart';
 import '../../stores/data/catalog_repository.dart';
 import '../models/campus.dart';
 import 'order_placed_screen.dart';
+import 'pick_building_screen.dart';
 
 /// 1. Delivery or pickup  2. Confirm order  3. Payment method  → Place order
 class CheckoutScreen extends StatefulWidget {
@@ -207,7 +208,31 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     );
   }
 
+  Future<void> _pickOnMap() async {
+    final id = await Navigator.push<String>(context, MaterialPageRoute(builder: (_) => PickBuildingScreen(initialBuildingId: _building?.id)));
+    if (id == null || !mounted) return;
+    for (final f in _campus) {
+      for (final b in f.buildings) {
+        if (b.id == id) {
+          setState(() {
+            _faculty = f;
+            _building = b;
+            _floor = b.floors.length == 1 ? b.floors.first : null;
+            _classroom = null;
+          });
+          return;
+        }
+      }
+    }
+  }
+
   List<Widget> _deliveryFields() => [
+        OutlinedButton.icon(
+          onPressed: _pickOnMap,
+          icon: const Icon(Icons.map_rounded),
+          label: Text(_building == null ? 'Pick your building on the campus map' : 'Change building on map (${_building!.code})'),
+        ),
+        const SizedBox(height: 12),
         _dropdown<Faculty>('Faculty', _faculty, _campus, (f) => f.name, (f) => setState(() {
               _faculty = f;
               _building = f != null && f.buildings.length == 1 ? f.buildings.first : null;

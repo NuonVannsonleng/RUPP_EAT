@@ -22,6 +22,8 @@ class Delivery {
     this.storeLogo,
     this.storePhone,
     this.storeLocation,
+    this.storeLat,
+    this.storeLng,
     this.customerName,
     this.customerPhone,
     this.requestedAt,
@@ -49,6 +51,8 @@ class Delivery {
   final String? storeLogo;
   final String? storePhone;
   final String? storeLocation;
+  final double? storeLat;
+  final double? storeLng;
   final String? customerName;
   final String? customerPhone;
   final DateTime? requestedAt;
@@ -61,6 +65,9 @@ class Delivery {
   bool get isActive => ['assigned', 'picked_up', 'arriving'].contains(status);
   bool get foodReady => ['ready', 'driver_assigned'].contains(orderStatus);
   bool get collectCash => paymentMethod == 'cash_on_delivery';
+
+  /// Where the driver is heading now: the store until pickup, then the customer's building.
+  bool get headingToStore => status == 'assigned' || status == 'searching';
 
   String get statusLabel => switch (status) {
         'searching' => 'New request',
@@ -98,6 +105,8 @@ class Delivery {
       storeLogo: s['logo_url'],
       storePhone: s['phone'],
       storeLocation: [s['building'], s['location_note']].whereType<String>().join(' · '),
+      storeLat: (s['latitude'] as num?)?.toDouble(),
+      storeLng: (s['longitude'] as num?)?.toDouble(),
       customerName: c?['name'],
       customerPhone: c?['phone'],
       requestedAt: parseDate(j['requested_at']),

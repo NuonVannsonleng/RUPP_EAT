@@ -16,6 +16,7 @@ Lists accept `page` and `per_page` (max 100).
 | Method | Path | Notes |
 |---|---|---|
 | POST | `/register` | Customer sign-up: `name, email, university_id, user_type (student\|lecturer\|staff), phone, password, password_confirmation` |
+| POST | `/register/driver` | Driver sign-up: `name, email, phone, vehicle_type (motorbike\|bicycle\|walking), plate_number (motorbike), national_id, password, password_confirmation, university_id?` → pending until an admin verifies |
 | POST | `/login` | `login` (email **or** student/staff ID), `password`, optional `app` = `mobile` \| `dashboard` (enforces the right client per role) |
 | POST | `/forgot-password` | Emails a 6-digit code (dev: see `storage/logs/laravel.log`) |
 | POST | `/reset-password` | `email, code, password, password_confirmation` |
@@ -37,6 +38,8 @@ Lists accept `page` and `per_page` (max 100).
 | GET | `/products` | `search, category, store_id, sort=popular\|price_asc\|price_desc\|newest\|rating` |
 | GET | `/stores/{id}/reviews`, `/products/{id}/reviews` | Reviews |
 | GET | `/campus/locations` | Faculty → building → floor → classroom tree (public) |
+| GET | `/campus/map` | Campus I outline + bounds, 17 buildings with footprints, coordinates and rooms, store pins (public) |
+| GET | `/orders/{id}/tracking` | Store, destination and live driver position (only people allowed to view the order; driver shown only while it is on its way) |
 | GET | `/settings/public` | Delivery fee, free-delivery threshold, KHQR flag, support contacts (public) |
 
 ## Customer
@@ -63,6 +66,7 @@ Lists accept `page` and `per_page` (max 100).
 |---|---|---|
 | GET | `/driver/dashboard` | Online state, verification, today/week stats & earnings, active deliveries |
 | POST | `/driver/availability` | `is_online` — only verified + active drivers |
+| POST | `/driver/location` | `latitude, longitude, heading?` — only while online (throttled 120/min); going offline clears it |
 | GET | `/driver/deliveries` | `type=available\|active\|completed\|cancelled\|history` |
 | GET | `/driver/deliveries/{id}` | Only own deliveries or open requests |
 | POST | `/driver/deliveries/{id}/accept` | Row-locked; second driver gets **409** |

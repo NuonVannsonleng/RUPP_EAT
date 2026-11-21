@@ -18,6 +18,8 @@ class StoreResource extends JsonResource
             'logo_url' => Media::url($this->logo_path),
             'cover_url' => Media::url($this->cover_path),
             'location_note' => $this->location_note,
+            'latitude' => $this->coordinates()['lat'] ?? null,
+            'longitude' => $this->coordinates()['lng'] ?? null,
             'phone' => $this->phone,
             'opening_time' => substr((string) $this->opening_time, 0, 5),
             'closing_time' => substr((string) $this->closing_time, 0, 5),

@@ -37,6 +37,9 @@ class Classroom extends Model
             'floor' => $this->floor->number,
             'floor_label' => $this->floor->label,
             'room' => $this->name,
+            // Destination pin for maps (building centre, WGS84)
+            'latitude' => $building->latitude,
+            'longitude' => $building->longitude,
         ];
     }
 }

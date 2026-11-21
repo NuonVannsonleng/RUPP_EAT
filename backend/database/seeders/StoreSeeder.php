@@ -26,8 +26,8 @@ class StoreSeeder extends Seeder
 
         $stores = [
             [
-                'owner' => 'owner.cafe@rupp.edu.kh', 'name' => 'Campus Café', 'building' => 'LIB',
-                'location' => 'Ground floor, next to the library entrance', 'phone' => '012 555 001',
+                'owner' => 'owner.cafe@rupp.edu.kh', 'name' => 'Campus Café', 'building' => 'HSL', 'pin' => [11.5682800, 104.8895900],
+                'location' => 'Ground floor, Hun Sen Library entrance', 'phone' => '012 555 001',
                 'hours' => ['00:00', '23:59'], 'featured' => true, 'cover' => '1509042239860-f550ce710b93',
                 'description' => 'Fresh coffee, Khmer iced coffee and quick breakfasts for early classes.',
                 'products' => [
@@ -42,8 +42,8 @@ class StoreSeeder extends Seeder
                 ],
             ],
             [
-                'owner' => 'owner.khmer@rupp.edu.kh', 'name' => 'Khmer Kitchen', 'building' => 'SC',
-                'location' => 'Student Center food court, stall 3', 'phone' => '012 555 002',
+                'owner' => 'owner.khmer@rupp.edu.kh', 'name' => 'Khmer Kitchen', 'building' => 'CAN', 'pin' => [11.5687600, 104.8904600],
+                'location' => 'Student Canteen, stall 3', 'phone' => '012 555 002',
                 'hours' => ['06:30', '20:00'], 'featured' => true, 'cover' => '1555939594-58d7cb561ad1',
                 'description' => 'Home-style Cambodian rice dishes cooked fresh every morning.',
                 'products' => [
@@ -56,8 +56,8 @@ class StoreSeeder extends Seeder
                 ],
             ],
             [
-                'owner' => 'owner.noodle@rupp.edu.kh', 'name' => 'Noodle House', 'building' => 'ENG',
-                'location' => 'Ground floor canteen, Engineering Building', 'phone' => '012 555 003',
+                'owner' => 'owner.noodle@rupp.edu.kh', 'name' => 'Noodle House', 'building' => 'CAN', 'pin' => [11.5689000, 104.8907600],
+                'location' => 'Student Canteen, stall 7', 'phone' => '012 555 003',
                 'hours' => ['07:00', '19:00'], 'featured' => false, 'cover' => '1569718212165-3a8278d5f624',
                 'description' => 'Kuy teav, fried noodles and ramen bowls near the Engineering Building.',
                 'products' => [
@@ -69,7 +69,7 @@ class StoreSeeder extends Seeder
                 ],
             ],
             [
-                'owner' => 'owner.sandwich@rupp.edu.kh', 'name' => 'Sandwich Lab', 'building' => 'STEM',
+                'owner' => 'owner.sandwich@rupp.edu.kh', 'name' => 'Sandwich Lab', 'building' => 'STEM', 'pin' => [11.5694700, 104.8898700],
                 'location' => 'STEM Building lobby kiosk', 'phone' => '012 555 004',
                 'hours' => ['07:00', '18:00'], 'featured' => true, 'cover' => '1550547660-d9450f859349',
                 'description' => 'Burgers, sandwiches and fried chicken built for busy STEM students.',
@@ -83,8 +83,8 @@ class StoreSeeder extends Seeder
                 ],
             ],
             [
-                'owner' => 'owner.fresh@rupp.edu.kh', 'name' => 'Fresh Bar', 'building' => 'IFL',
-                'location' => 'IFL Building courtyard', 'phone' => '012 555 005',
+                'owner' => 'owner.fresh@rupp.edu.kh', 'name' => 'Fresh Bar', 'building' => 'C', 'pin' => [11.5701200, 104.8909800],
+                'location' => 'Ground floor, Building C', 'phone' => '012 555 005',
                 'hours' => ['07:00', '20:00'], 'featured' => false, 'cover' => '1488477181946-6428a0291777',
                 'description' => 'Juices, smoothies, desserts and healthy bowls.',
                 'products' => [
@@ -107,6 +107,8 @@ class StoreSeeder extends Seeder
                 'name' => $s['name'],
                 'description' => $s['description'],
                 'location_note' => $s['location'],
+                'latitude' => $s['pin'][0],
+                'longitude' => $s['pin'][1],
                 'phone' => $s['phone'],
                 'opening_time' => $s['hours'][0],
                 'closing_time' => $s['hours'][1],
@@ -139,7 +141,7 @@ class StoreSeeder extends Seeder
             'store_name' => 'Num Pang Corner',
             'description' => 'Khmer baguette sandwiches (num pang) and sugarcane juice.',
             'building_id' => $building['B'],
-            'location_note' => 'Next to Building B parking',
+            'location_note' => 'Next to Building B',
             'status' => 'pending',
         ]);
     }

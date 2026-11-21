@@ -13,6 +13,7 @@ class DriverProfile extends Model
     protected $fillable = [
         'user_id', 'vehicle_type', 'plate_number', 'national_id', 'verification_status',
         'verified_at', 'verified_by', 'is_active', 'is_online', 'last_online_at',
+        'current_latitude', 'current_longitude', 'current_heading', 'location_updated_at',
     ];
 
     protected function casts(): array
@@ -22,6 +23,10 @@ class DriverProfile extends Model
             'is_online' => 'boolean',
             'verified_at' => 'datetime',
             'last_online_at' => 'datetime',
+            'current_latitude' => 'float',
+            'current_longitude' => 'float',
+            'current_heading' => 'float',
+            'location_updated_at' => 'datetime',
         ];
     }
 

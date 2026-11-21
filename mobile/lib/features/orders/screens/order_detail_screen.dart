@@ -14,6 +14,7 @@ import '../../cart/providers/cart_provider.dart';
 import '../../profile/screens/support_screen.dart';
 import '../data/order_repository.dart';
 import '../models/order.dart';
+import '../widgets/order_tracking_map.dart';
 import 'review_screen.dart';
 
 /// Live order tracking. Refreshes every few seconds while the order is active.
@@ -114,6 +115,10 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                   child: ListView(padding: const EdgeInsets.fromLTRB(16, 4, 16, 32), children: [
                     _statusHeader(o),
                     const SizedBox(height: 12),
+                    if (o.isActive) ...[
+                      OrderTrackingMap(orderId: o.id, active: o.isDelivery),
+                      const SizedBox(height: 12),
+                    ],
                     if (!o.isCancelled) _tracker(o),
                     if (o.isCancelled && o.cancelReason != null)
                       Card(child: ListTile(leading: const Icon(Icons.info_outline, color: AppColors.danger), title: const Text('Reason'), subtitle: Text(o.cancelReason!))),

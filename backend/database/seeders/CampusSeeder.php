@@ -4,69 +4,83 @@ namespace Database\Seeders;
 
 use App\Models\Building;
 use App\Models\Faculty;
+use App\Models\SystemSetting;
 use Illuminate\Database\Seeder;
 
-/** Sample RUPP campus structure. Admins can edit everything from the dashboard. */
+/**
+ * Real RUPP Campus I layout.
+ *
+ * Positions and footprints: OpenStreetMap (© OpenStreetMap contributors, ODbL).
+ * Building names: the official "Map of Royal University of Phnom Penh" (2022).
+ * Source file: database/data/rupp_campus_osm.json
+ *
+ * Floors and room names are sample data; admins can edit them in the dashboard.
+ */
 class CampusSeeder extends Seeder
 {
     public function run(): void
     {
-        $campus = [
-            ['Faculty of Science', 'FS', [
-                ['Building A', 'A', 4, 11.5689, 104.8905],
-                ['Science Laboratory Building', 'LAB', 3, 11.5685, 104.8909],
-            ]],
-            ['Faculty of Engineering', 'FE', [
-                ['Engineering Building', 'ENG', 5, 11.5694, 104.8899],
-                ['STEM Building', 'STEM', 4, 11.5697, 104.8903],
-            ]],
-            ['Faculty of Social Sciences and Humanities', 'FSSH', [
-                ['Building B', 'B', 4, 11.5683, 104.8899],
-                ['Building C', 'C', 3, 11.5680, 104.8903],
-            ]],
-            ['Faculty of Development Studies', 'FDS', [
-                ['Building D', 'D', 3, 11.5687, 104.8913],
-            ]],
-            ['Faculty of Education', 'FOE', [
-                ['Education Building', 'EDU', 3, 11.5691, 104.8915],
-            ]],
-            ['Institute of Foreign Languages', 'IFL', [
-                ['IFL Building', 'IFL', 4, 11.5702, 104.8911],
-            ]],
-            ['Central Facilities', 'CF', [
-                ['Main Library', 'LIB', 2, 11.5692, 104.8907],
-                ['Student Center', 'SC', 2, 11.5686, 104.8896],
-            ]],
-        ];
+        $data = json_decode(file_get_contents(database_path('data/rupp_campus_osm.json')), true);
 
-        foreach ($campus as [$facultyName, $code, $buildings]) {
-            $faculty = Faculty::updateOrCreate(['code' => $code], ['name' => $facultyName, 'description' => "$facultyName, Royal University of Phnom Penh"]);
+        // The campus outline restricts every map in the apps to Campus I.
+        $polygon = $data['campus']['polygon'];
+        $lats = array_column($polygon, 0);
+        $lngs = array_column($polygon, 1);
+        SystemSetting::updateOrCreate(['key' => 'campus_map'], [
+            'type' => 'json',
+            'group' => 'campus',
+            'description' => 'RUPP Campus I outline used to limit maps (OpenStreetMap).',
+            'value' => json_encode([
+                'name' => $data['campus']['name'],
+                'center' => $data['campus']['center'],
+                'bounds' => ['south' => min($lats), 'west' => min($lngs), 'north' => max($lats), 'east' => max($lngs)],
+                'polygon' => $polygon,
+                'landmarks' => $data['landmarks'] ?? [],
+                'attribution' => $data['license'],
+            ]),
+        ]);
 
-            foreach ($buildings as [$name, $bCode, $floors, $lat, $lng]) {
-                $building = Building::updateOrCreate(['code' => $bCode], [
-                    'faculty_id' => $faculty->id, 'name' => $name, 'latitude' => $lat, 'longitude' => $lng,
-                ]);
+        $zones = [];
+        foreach ($data['zones'] as $code => $name) {
+            $zones[$code] = Faculty::updateOrCreate(['code' => $code], [
+                'name' => $name,
+                'description' => "$name — Royal University of Phnom Penh, Campus I",
+            ]);
+        }
 
-                for ($f = 1; $f <= $floors; $f++) {
-                    $floor = $building->floors()->updateOrCreate(['number' => $f], ['label' => $f === 1 ? 'Ground floor' : "Floor $f"]);
+        foreach ($data['buildings'] as $b) {
+            $building = Building::updateOrCreate(['code' => $b['code']], [
+                'faculty_id' => $zones[$b['zone']]->id,
+                'name' => $b['name'],
+                'description' => $b['official_map_no'] ? "No. {$b['official_map_no']} on the official RUPP campus map" : null,
+                'latitude' => $b['lat'],
+                'longitude' => $b['lng'],
+                'polygon' => $b['polygon'],
+                'official_map_no' => $b['official_map_no'],
+            ]);
 
-                    if (in_array($bCode, ['LIB', 'SC'], true)) {
-                        $rooms = $bCode === 'LIB'
-                            ? [['Reading Hall', 'hall'], ['Study Room '.$f.'01', 'other'], ['Study Room '.$f.'02', 'other']]
-                            : [['Lobby', 'hall'], ['Meeting Room '.$f.'01', 'office']];
-                    } else {
-                        $rooms = [];
-                        for ($r = 1; $r <= 6; $r++) {
-                            $rooms[] = ['Room '.$f.sprintf('%02d', $r), $r === 6 && $bCode === 'LAB' ? 'lab' : 'classroom'];
-                        }
-                        $rooms[] = ['Lecturer Office '.$f.'00', 'office'];
-                    }
+            for ($f = 1; $f <= $b['floors']; $f++) {
+                $floor = $building->floors()->updateOrCreate(['number' => $f], ['label' => $f === 1 ? 'Ground floor' : "Floor $f"]);
 
-                    foreach ($rooms as [$roomName, $type]) {
-                        $floor->classrooms()->updateOrCreate(['name' => $roomName], ['type' => $type]);
-                    }
+                foreach ($this->roomsFor($b['code'], $f, $b['floors']) as [$roomName, $type]) {
+                    $floor->classrooms()->updateOrCreate(['name' => $roomName], ['type' => $type]);
                 }
             }
         }
+    }
+
+    /** Sample rooms per floor, by building type. */
+    private function roomsFor(string $code, int $floor, int $floors): array
+    {
+        return match ($code) {
+            'CAN' => [['Seating area', 'hall'], ['Outdoor tables', 'other']],
+            'AUD' => [['Main hall', 'hall'], ['Lobby', 'hall']],
+            'LIB', 'HSL', 'FLIB' => [['Reading hall '.$floor, 'library'], ['Study room '.$floor.'01', 'other'], ['Study room '.$floor.'02', 'other']],
+            'CKCC', 'CJCC' => [['Lobby', 'hall'], ['Training room '.$floor.'01', 'classroom'], ['Office '.$floor.'02', 'office']],
+            default => array_merge(
+                array_map(fn ($r) => ['Room '.$floor.sprintf('%02d', $r), $code === 'STEM' && $r >= 5 ? 'lab' : 'classroom'], range(1, 6)),
+                [['Lecturer Office '.$floor.'00', 'office']],
+            ),
+        };
     }
 }

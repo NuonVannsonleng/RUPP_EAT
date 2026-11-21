@@ -103,6 +103,47 @@ npm run dev                 # http://localhost:5173  (proxies /api to :8000)
 Command line alternative: `cd mobile; flutter run`.
 On a real phone use your PC's LAN IP: `flutter run --dart-define=API_BASE_URL=http://192.168.x.x:8000/api`.
 
+### Google Maps key (for the real Google map)
+
+1. In [Google Cloud Console](https://console.cloud.google.com/), create an API key and enable **Maps SDK for Android**
+   (billing must be enabled). Restrict the key to Android apps with package `kh.edu.rupp.rupp_eat`.
+2. Add it to `mobile/android/local.properties` (this file is gitignored, so the key never reaches GitHub):
+
+   ```
+   MAPS_API_KEY=AIza...your key...
+   ```
+3. Rebuild the app (Run ▶). Without a key, the app shows the same maps as a drawn campus plan, so every map feature keeps working.
+
+**Emulator GPS:** put the emulator on campus with Extended controls (⋯) → Location, or
+`adb emu geo fix 104.8902 11.5689`. The driver app also needs Location turned on in the emulator's Android settings.
+
+## Campus maps (RUPP Campus I only)
+
+All maps are locked to the RUPP Campus I outline (camera bounds and zoom 16–20), not the whole city.
+
+| Feature | Where |
+|---|---|
+| **Campus food map**: every store pinned on its real building, tap to order | Home → map icon / "Find food on the RUPP Campus I map" |
+| **Pick building on map**: choose the delivery building by tapping it | Checkout → "Pick your building on the campus map" |
+| **Live driver tracking**: store, your building and the driver's real GPS, refreshed every 5 s | Order screen while the order is active |
+| **Driver navigation**: my position, store, destination, route line and "Google Maps" turn-by-turn button | Driver → active delivery |
+
+Driver GPS is sent every ~8 s only while the driver is online (and cleared when they go offline). Only the customer
+of that order (plus the store and admins) can see it, and only while the order is on its way.
+
+**Map data.** Building positions and footprints come from OpenStreetMap (© OpenStreetMap contributors, ODbL).
+Building names follow the official *Map of Royal University of Phnom Penh* (2022). The data is in
+[`backend/database/data/rupp_campus_osm.json`](backend/database/data/rupp_campus_osm.json): 17 buildings
+(A, B, C, D, T, STEM, Hun Sen Library, RUPP Library, CKCC, Student Canteen, Auditorium Hall, DMC, IFL main/B/C,
+French Library, CJCC). Grouping buildings into faculties/areas and the floor/room numbers are sample data that admins
+can edit under Campus locations.
+
+## Roles and driver sign-up
+
+The mobile **Sign up** screen asks *Order food* (student / lecturer / staff → customer) or *Deliver food* (driver).
+Drivers enter vehicle, plate number and an ID number. They can log in straight away but stay **pending** (cannot go online)
+until an admin verifies them in the dashboard under **Drivers → Awaiting verification**. Admins get a notification for each application.
+
 ## Demo accounts (password for all: `password123`)
 
 | Role | Login | Where |
@@ -113,8 +154,8 @@ On a real phone use your PC's LAN IP: `flutter run --dart-define=API_BASE_URL=ht
 | Student | `student@rupp.edu.kh` or ID `E20230001` · also `vannak.student@…`, `bopha.student@…`, `rithy.student@…` | Mobile app |
 | Lecturer / staff | `lecturer@rupp.edu.kh`, `staff@rupp.edu.kh` | Mobile app |
 
-The seed includes 5 stores with 33 menu items, the RUPP campus hierarchy (7 faculties/units, 12 buildings,
-~300 rooms), 30 days of order history for charts, and live orders so each role has something to do:
+The seed includes 5 stores with 33 menu items pinned on real campus buildings, 17 real RUPP Campus I buildings
+(~330 rooms), 30 days of order history for charts, and live orders so each role has something to do:
 Campus Café has 2 new orders to accept, and driver1 has a delivery request waiting.
 
 ## Demo walkthrough (all four roles)

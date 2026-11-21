@@ -11,6 +11,8 @@ import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/common.dart';
 import '../data/driver_repository.dart';
 import '../models/delivery.dart';
+import '../widgets/driver_navigation_map.dart';
+import '../../auth/providers/auth_provider.dart';
 
 /// One assigned delivery: go to store → confirm pickup → classroom → confirm delivery.
 class DeliveryDetailScreen extends StatefulWidget {
@@ -102,6 +104,10 @@ class _DeliveryDetailScreenState extends State<DeliveryDetailScreen> {
               onRefresh: _load,
               child: ListView(padding: const EdgeInsets.fromLTRB(16, 4, 16, 140), children: [
                 _progress(d),
+                if (d.isActive) ...[
+                  const SizedBox(height: 12),
+                  DriverNavigationMap(delivery: d, vehicleType: context.read<AuthProvider>().user?.driverProfile?.vehicleType ?? 'motorbike'),
+                ],
                 const SizedBox(height: 12),
                 _section(
                   step: '1',

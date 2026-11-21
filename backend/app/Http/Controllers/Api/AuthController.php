@@ -6,7 +6,9 @@ use App\Enums\RoleName;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\ChangePasswordRequest;
 use App\Http\Requests\Auth\LoginRequest;
+use App\Http\Requests\Auth\RegisterDriverRequest;
 use App\Http\Requests\Auth\RegisterRequest;
+use App\Services\NotificationService;
 use App\Http\Requests\Auth\ResetPasswordRequest;
 use App\Http\Requests\Auth\UpdateProfileRequest;
 use App\Http\Resources\UserResource;
@@ -40,6 +42,45 @@ class AuthController extends Controller
         ActivityLogger::log('user.registered', "{$user->name} registered", $user, [], $user->id);
 
         return $this->created($this->authPayload($user, $request->device_name ?? 'mobile'), 'Welcome to RUPP Eat!');
+    }
+
+    /**
+     * POST /api/register/driver — a campus driver applies in the mobile app.
+     * They can log in immediately but stay offline until an admin verifies them.
+     */
+    public function registerDriver(RegisterDriverRequest $request, NotificationService $notifications): JsonResponse
+    {
+        $user = DB::transaction(function () use ($request) {
+            $user = User::create([
+                'role_id' => Role::idFor(RoleName::Driver->value),
+                'name' => $request->name,
+                'email' => strtolower($request->email),
+                'university_id' => $request->university_id ? strtoupper($request->university_id) : null,
+                'phone' => $request->phone,
+                'password' => $request->password,
+                'last_login_at' => now(),
+            ]);
+            $user->driverProfile()->create([
+                'vehicle_type' => $request->vehicle_type,
+                'plate_number' => $request->plate_number,
+                'national_id' => $request->national_id,
+                'verification_status' => 'pending',
+                'is_active' => true,
+                'is_online' => false,
+            ]);
+
+            return $user;
+        });
+
+        foreach (User::whereHas('role', fn ($q) => $q->where('name', RoleName::Admin->value))->get() as $admin) {
+            $notifications->notify($admin, 'driver_application', 'New driver to verify',
+                "{$user->name} ({$request->vehicle_type}) registered as a driver and is waiting for verification.",
+                ['driver_id' => $user->id]);
+        }
+        ActivityLogger::log('driver.registered', "{$user->name} registered as a driver", $user, [], $user->id);
+
+        return $this->created($this->authPayload($user, $request->device_name ?? 'mobile'),
+            'Driver account created. An administrator will verify you before you can go online.');
     }
 
     /** Log in with email OR student/staff ID. */

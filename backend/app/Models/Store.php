@@ -16,7 +16,7 @@ class Store extends Model
 
     protected $fillable = [
         'owner_id', 'building_id', 'name', 'slug', 'description', 'logo_path', 'cover_path',
-        'location_note', 'phone', 'opening_time', 'closing_time', 'status', 'is_open', 'is_featured',
+        'location_note', 'latitude', 'longitude', 'phone', 'opening_time', 'closing_time', 'status', 'is_open', 'is_featured',
     ];
 
     protected function casts(): array
@@ -24,6 +24,8 @@ class Store extends Model
         return [
             'is_open' => 'boolean',
             'is_featured' => 'boolean',
+            'latitude' => 'float',
+            'longitude' => 'float',
             'rating_avg' => 'float',
             'rating_count' => 'integer',
         ];
@@ -57,6 +59,17 @@ class Store extends Model
     public function reviews(): HasMany
     {
         return $this->hasMany(Review::class);
+    }
+
+    /** Map pin: the store's own coordinates, falling back to its building. */
+    public function coordinates(): ?array
+    {
+        if ($this->latitude !== null && $this->longitude !== null) {
+            return ['lat' => (float) $this->latitude, 'lng' => (float) $this->longitude];
+        }
+        $b = $this->building;
+
+        return $b && $b->latitude !== null ? ['lat' => (float) $b->latitude, 'lng' => (float) $b->longitude] : null;
     }
 
     public function scopeActive(Builder $query): Builder

@@ -42,6 +42,9 @@ class DriverRepository {
     );
   }
 
+  Future<void> sendLocation(double lat, double lng, double? heading) =>
+      _api.post('/driver/location', data: {'latitude': lat, 'longitude': lng, 'heading': heading});
+
   Future<bool> setOnline(bool online) async => ((await _api.post('/driver/availability', data: {'is_online': online}))['data'] as Map)['is_online'] == true;
 
   /// type: available | active | completed | cancelled | history

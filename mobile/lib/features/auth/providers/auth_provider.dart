@@ -54,6 +54,11 @@ class AuthProvider extends ChangeNotifier {
     await _signIn(token, u);
   }
 
+  Future<void> registerDriver(Map<String, dynamic> data) async {
+    final (token, u) = await _repo.registerDriver(data);
+    await _signIn(token, u);
+  }
+
   Future<void> refreshUser() async {
     user = await _repo.me();
     notifyListeners();
