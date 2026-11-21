@@ -1,0 +1,23 @@
+# Local tooling
+.claude/
+.idea/
+.vscode/
+*.log
+
+# Secrets — never commit real environment files (the .env.example templates are committed)
+.env
+.env.*
+!.env.example
+**/service-account*.json
+mobile/android/app/google-services.json
+
+# Local development database (data files + password hashes)
+database/pgdata/
+database/pgdata.log
+
+# Dependencies and build output (also covered by each sub-project's .gitignore)
+node_modules/
+vendor/
+dist/
+build/
+.dart_tool/
